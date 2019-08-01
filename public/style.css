@@ -42,7 +42,9 @@
         opacity: 0.8;
     }
     .servers {
+        margin: auto;
         padding: 10px;
+        width: 300px;
     }
     .sv {
         border: 1px solid gray;
@@ -53,4 +55,20 @@
         text-transform: uppercase;
         box-shadow: 0 1px 4px 0 rgba(132, 141, 154, 0.8);
         cursor: pointer;
+    }
+    .spanR{
+        float: right;
+    }
+    .svStatus {
+        margin-left: 10px;
+        color: blue;
+    }
+    table {
+        margin: auto;
+        margin-top: 20px;
+    }
+    td {
+        width: 8px;
+        height: 8px;
+        border: 0;
     }
