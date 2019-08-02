@@ -72,3 +72,7 @@
         height: 8px;
         border: 0;
     }
+    #sketch-holder {
+        max-width: 500px;
+        margin: auto;
+    }

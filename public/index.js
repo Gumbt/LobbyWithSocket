@@ -3,7 +3,13 @@ const tableWidth = 91;
 const tableHeight = 71;
 const ColorsPalette = [{"r":7,"g":7,"b":7},{"r":255,"g":7,"b":7},{"r":7,"g":7,"b":255}];
 var username;
+var gameOver = false;
+var whichPlayerLost = 0;
 
+var players = [];
+var trail1 =[];
+var trail2 =[];
+const diff = 5;
 const pr = document.getElementById("root");
 
 socket.on('connect', function(){
@@ -37,49 +43,81 @@ socket.on('dispRooms', function(rooms) {
             room.name+'<span class="svStatus">'+room.status+'</span>'+'<span class="spanR">'+room.q+'/'+room.max+'</span></div>')
     }
 })
-socket.on('ready',  function (start){
-    $('.servers').remove();
-    let timerInterval
-    Swal.fire({
-        title: 'Começando jogo',
-        html: 'Jogo começando em <strong></strong> segundos.',
-        allowOutsideClick: false,
-        timer: 10000,
-        onBeforeOpen: () => {
-            Swal.showLoading()
-            timerInterval = setInterval(() => {
-            Swal.getContent().querySelector('strong')
-                .textContent = parseInt(Swal.getTimerLeft()/1000);
-            }, 100)
-        },
-        onClose: () => {
-            clearInterval(timerInterval)
-        }
-        }).then(() => {
-            socket.emit('go', true);
 
-    })
-});
+function setup(){
+    socket.on('ready',  function (start){
+        $('.login').remove();
+        let timerInterval
+        Swal.fire({
+            title: 'Começando jogo',
+            html: 'Jogo começando em <strong></strong> segundos.',
+            allowOutsideClick: false,
+            timer: 5000,
+            onBeforeOpen: () => {
+                Swal.showLoading()
+                timerInterval = setInterval(() => {
+                Swal.getContent().querySelector('strong')
+                    .textContent = parseInt(Swal.getTimerLeft()/1000);
+                }, 100);
+                var canvas = createCanvas(500, 500);
+                frameRate(15);
+                stroke(255);
+                strokeWeight(10);
+                canvas.parent('sketch-holder');
+                background(0);
+            },
+            onClose: () => {
+                clearInterval(timerInterval)
+            }
+            }).then(() => {
+                socket.emit('go', true);
+    
+        })
+    });
+
+
+}
+function draw(){
+    fill(color(50, 50, 255));
+    noStroke();
+    for (var i = 0; i < trail1.length; i++) {
+        rect(trail1[i].x, trail1[i].y, diff, diff);
+    }
+    fill(color(255, 50, 50));
+    for (var i = 0; i < trail2.length; i++) {
+        rect(trail2[i].x, trail2[i].y, diff, diff);
+    }
+}
 socket.on('table',  function (tb){
-
-    render(tb);
+    // draw each segment of trail
+    //rect(tb.player1.position.x, tb.player1.position.y, diff, diff);
+    console.log(tb)
+    if(tb.status == 1){
+        var pos1 = {
+            x: constrain(tb.player1.position.x, 0, width - diff), 
+            y: constrain(tb.player1.position.y, 0, height - diff),
+        }
+        var pos2 = {
+            x: constrain(tb.player2.position.x, 0, width - diff), 
+            y: constrain(tb.player2.position.y, 0, height - diff),
+        }
+        trail1.push(pos1);
+        trail2.push(pos2);
+    }else{
+        if(tb.status==2){
+            alert('Jogador 1 ganhou')
+        }
+        if(tb.status==3){
+            alert('Jogador 2 ganhou')
+        }
+        if(tb.status==4){
+            alert('Empate')
+        }
+    }
 });
+
 function switchRoom(room){
     socket.emit('switchRoom', room);
-}
-function render(PlayerArray){
-    let html = '<table cellpadding=0 cellspacing=0>';
-    for(let i = 0; i < tableHeight; i++){
-        html += '<tr>';
-        for(let j = 0; j < tableWidth; j++){
-            html += '<td style="background-color:rgb('+ ColorsPalette[PlayerArray[i][j]].r+','+ ColorsPalette[PlayerArray[i][j]].g + ','+ColorsPalette[PlayerArray[i][j]].b+')">';
-            html += '</td>';
-        }
-        html += '</tr>';
-    }
-    html += '</table>';
-
-    pr.innerHTML = html;
 }
 
 function controles(e, event){
